@@ -33,7 +33,7 @@ class Parser(html.parser.HTMLParser):
                     self.url = attrs.get('href')
 
 
-def open_url(url, insecure):
+def open_url(url, insecure = False):
     if url == "-":
         return sys.stdin
 
@@ -79,7 +79,7 @@ def open_url(url, insecure):
                     path = os.path.dirname(base_url[2]) + '/' + new_url
                     new_url = urlunparse((base_url[0], base_url[1], path, '', '', ''))
 
-            return open_url(new_url)
+            return open_url(new_url, insecure)
 
         return utf8_reader(body, errors='strict')
 
