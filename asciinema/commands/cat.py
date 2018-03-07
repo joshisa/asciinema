@@ -6,13 +6,14 @@ import asciinema.asciicast as asciicast
 
 class CatCommand(Command):
 
-    def __init__(self, filename):
+    def __init__(self, filename, args):
         Command.__init__(self)
         self.filename = filename
+        self.insecure = args.insecure if hasattr(args, "insecure") else False
 
     def execute(self):
         try:
-            with asciicast.open_from_url(self.filename) as a:
+            with asciicast.open_from_url(self.filename, self.insecure) as a:
                 for t, text in a.stdout():
                     sys.stdout.write(text)
                     sys.stdout.flush()

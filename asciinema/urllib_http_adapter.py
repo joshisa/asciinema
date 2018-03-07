@@ -4,10 +4,15 @@ import uuid
 import io
 import base64
 import http
+import ssl
 
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from .http_adapter import HTTPConnectionError
+
+#if UploadCommand().getInsecure():
+#    print ("Boom!")
+#    selfsignedcontext = ssl._create_unverified_context()
 
 
 class MultipartFormdataEncoder:
@@ -57,7 +62,9 @@ class MultipartFormdataEncoder:
         return self.content_type, body.getvalue()
 
 
-class URLLibHttpAdapter:
+class URLLibHttpAdapter():
+    def __init__(self,insecure=False):
+        self.insecure = insecure
 
     def post(self, url, fields={}, files={}, headers={}, username=None, password=None):
         content_type, body = MultipartFormdataEncoder().encode(fields, files)
@@ -73,7 +80,16 @@ class URLLibHttpAdapter:
         request = Request(url, data=body, headers=headers, method="POST")
 
         try:
-            response = urlopen(request)
+            # Assessing whether SSL verification should be turned off
+            # This is especially useful for self-hosted Asciinema deploys
+            # where self-signed certificates may be in use.
+
+            if self.insecure:
+                context=ssl._create_unverified_context()
+            else:
+                context=None
+
+            response = urlopen(request,context=context)
             status = response.status
             headers = self._parse_headers(response)
             body = response.read().decode('utf-8')

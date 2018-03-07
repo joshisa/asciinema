@@ -1,5 +1,6 @@
 import sys
 import os
+import ssl
 from urllib.request import Request, urlopen
 from urllib.parse import urlparse, urlunparse
 import urllib.error
@@ -9,7 +10,6 @@ import codecs
 
 from . import v1
 from . import v2
-
 
 class LoadError(Exception):
     pass
@@ -33,9 +33,15 @@ class Parser(html.parser.HTMLParser):
                     self.url = attrs.get('href')
 
 
-def open_url(url):
+def open_url(url, insecure):
     if url == "-":
         return sys.stdin
+
+    # Establishing whether SSL verification should be turned off
+    if insecure:
+        context = ssl._create_unverified_context()
+    else:
+        context = None
 
     if url.startswith("ipfs://"):
         url = "https://ipfs.io/ipfs/%s" % url[7:]
@@ -45,7 +51,7 @@ def open_url(url):
     if url.startswith("http:") or url.startswith("https:"):
         req = Request(url)
         req.add_header('Accept-Encoding', 'gzip')
-        response = urlopen(req)
+        response = urlopen(req, context=context)
         body = response
         url = response.geturl()  # final URL after redirects
 
@@ -83,12 +89,13 @@ def open_url(url):
 class open_from_url():
     FORMAT_ERROR = "only asciicast v1 and v2 formats can be opened"
 
-    def __init__(self, url):
+    def __init__(self, url, insecure = False):
         self.url = url
+        self.insecure = insecure
 
     def __enter__(self):
         try:
-            self.file = open_url(self.url)
+            self.file = open_url(self.url, self.insecure)
             first_line = self.file.readline()
 
             try:  # try v2 first

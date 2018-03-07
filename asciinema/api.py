@@ -13,11 +13,12 @@ class APIError(Exception):
 
 class Api:
 
-    def __init__(self, url, user, install_id, http_adapter=None):
+    def __init__(self, url, user, install_id, args, http_adapter=None):
         self.url = url
         self.user = user
+        self.insecure = args.insecure if hasattr(args, "insecure") else False
         self.install_id = install_id
-        self.http_adapter = http_adapter if http_adapter is not None else URLLibHttpAdapter()
+        self.http_adapter = http_adapter if http_adapter is not None else URLLibHttpAdapter(self.insecure)
 
     def hostname(self):
         return urlparse(self.url).hostname

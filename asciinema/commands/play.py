@@ -5,16 +5,17 @@ import asciinema.asciicast as asciicast
 
 class PlayCommand(Command):
 
-    def __init__(self, filename, idle_time_limit, speed, player=None):
+    def __init__(self, filename, idle_time_limit, speed, args, player=None):
         Command.__init__(self)
         self.filename = filename
         self.idle_time_limit = idle_time_limit
         self.speed = speed
+        self.insecure = args.insecure if hasattr(args, "insecure") else False
         self.player = player if player is not None else Player()
 
     def execute(self):
         try:
-            with asciicast.open_from_url(self.filename) as a:
+            with asciicast.open_from_url(self.filename, self.insecure) as a:
                 self.player.play(a, self.idle_time_limit, self.speed)
 
         except asciicast.LoadError as e:

@@ -22,25 +22,25 @@ def positive_float(value):
 
 
 def rec_command(args, config):
-    api = Api(config.api_url, os.environ.get("USER"), config.install_id)
+    api = Api(config.api_url, os.environ.get("USER"), config.install_id, args)
     return RecordCommand(api, args)
 
 
 def play_command(args, config):
-    return PlayCommand(args.filename, args.idle_time_limit, args.speed)
+    return PlayCommand(args.filename, args.idle_time_limit, args.speed, args)
 
 
 def cat_command(args, config):
-    return CatCommand(args.filename)
+    return CatCommand(args.filename, args)
 
 
 def upload_command(args, config):
-    api = Api(config.api_url, os.environ.get("USER"), config.install_id)
-    return UploadCommand(api, args.filename)
+    api = Api(config.api_url, os.environ.get("USER"), config.install_id, args)
+    return UploadCommand(api, args.filename, args.insecure)
 
 
 def auth_command(args, config):
-    api = Api(config.api_url, os.environ.get("USER"), config.install_id)
+    api = Api(config.api_url, os.environ.get("USER"), config.install_id, args)
     return AuthCommand(api)
 
 
@@ -84,6 +84,7 @@ For help on a specific command run:
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument('--version', action='version', version='asciinema %s' % __version__)
+    parser.add_argument('--insecure', help='insecure mode - useful for self-signed self-hosted envs', action='store_true')
 
     subparsers = parser.add_subparsers()
 
